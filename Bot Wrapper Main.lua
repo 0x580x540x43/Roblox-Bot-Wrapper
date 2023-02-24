@@ -24,51 +24,51 @@ end
 
 local OutgoingMessages = {
 
-}
+    }
 
 local GlobalWSConnection = WebSocket.OnMessage:Connect(function(Data)
-	local Response = HttpService:JSONDecode(Data)
-	OutgoingMessages[Response["ID"]] = Response["Body"] 
+    local Response = HttpService:JSONDecode(Data)
+    OutgoingMessages[Response["ID"]] = Response["Body"]
 end)
 
 local function AskServerTwoWay(Message, Args)
-	local MessageId = HttpService:GenerateGUID(false)
-	Args = Args or {}
-	Args["ClientID"] = MessageId
+    local MessageId = HttpService:GenerateGUID(false)
+    Args = Args or {}
+    Args["ClientID"] = MessageId
 
-	SendToMaster({
+    SendToMaster({
         ["Operation"] = Message,
         ["Arguments"] = Args
     })
-	repeat 
-		task.wait()
-	until OutgoingMessages[MessageId]
-	local Message = OutgoingMessages[MessageId]
-	OutgoingMessages[MessageId] = nil
-	return Message
+    repeat
+        task.wait()
+    until OutgoingMessages[MessageId]
+    local Message = OutgoingMessages[MessageId]
+    OutgoingMessages[MessageId] = nil
+    return Message
 end
 
 local Bot = {}
 
 SendToMaster({
-	["Operation"] = "SetMainAccount",
-	["Arguments"] = {
-		["Username"] = LocalPlayer.Name
-	}
+    ["Operation"] = "SetMainAccount",
+    ["Arguments"] = {
+        ["Username"] = LocalPlayer.Name
+    }
 })
 
 function Bot:Launch(PlaceId, JobId)
-   local a = {}
+    local a = {}
 
-   setmetatable( a, self)
-   self.__index = self
+    setmetatable( a, self)
+    self.__index = self
 
-   a.UserId = AskServerTwoWay("NewBot", {
-	["PlaceId"] = PlaceId,
-	["JobId"] = JobId,
-   })
+    a.UserId = AskServerTwoWay("NewBot", {
+        ["PlaceId"] = PlaceId,
+        ["JobId"] = JobId,
+    })
 
-   return  a
+    return  a
 end
 
 function Bot:GetBots()
@@ -76,46 +76,46 @@ function Bot:GetBots()
 end
 
 function Bot:Disconnect()
-	SendToMaster({
+    SendToMaster({
         ["Operation"] = "Disconnect",
         ["Arguments"] = {
-			["Who"] = self.UserId,
-		}
+            ["Who"] = self.UserId,
+        }
     })
 end
 
 function Bot:Chat(Message)
-	SendToMaster({
+    SendToMaster({
         ["Operation"] = "Chat",
         ["Arguments"] = {["Message"] = Message},
-		["Who"] = self.UserId,
+        ["Who"] = self.UserId,
     })
 end
 
 function Bot:GetMemory(Key)
-	return AskServerTwoWay("GetMemory", {
-		["Who"] = self.UserId
-	})[Key]
+    return AskServerTwoWay("GetMemory", {
+        ["Who"] = self.UserId
+    })[Key]
 end
 
 function Bot:LoadToMemory(Key, Value)
-	SendToMaster({
+    SendToMaster({
         ["Operation"] = "AddToMemory",
         ["Arguments"] = {
-			["Key"] = Key,
-			["Value"] = Value,
-			["Who"] = self.UserId,
-		}
+            ["Key"] = Key,
+            ["Value"] = Value,
+            ["Who"] = self.UserId,
+        }
     })
 end
 
 function Bot:Execute(Code)
-	SendToMaster({
+    SendToMaster({
         ["Operation"] = "Execute",
         ["Arguments"] = {
-			["Code"] = Code,
-			["Who"] = self.UserId,
-		}
+            ["Code"] = Code,
+            ["Who"] = self.UserId,
+        }
     })
 end
 
