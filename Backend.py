@@ -193,6 +193,7 @@ def LoadBot(PlaceId, JobId, Memory = {}):
         "FailedAttempts" : 0,
         "ProcessId" : 0,
         "PlaceId" : PlaceId,
+        "Injected" : False,
         "JobId" : JobId, 
         "Storage" : Memory
     }
