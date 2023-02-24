@@ -7,6 +7,9 @@ local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local CoreGui = game:GetService("CoreGui")
 local NetworkClient = game:GetService("NetworkClient")
+local StarterGui = game:GetService("StarterGui")
+local Lighting = game:GetService("Lighting")
+local Terrain = workspace.Terrain
 local PromptOverlay = CoreGui:WaitForChild("RobloxPromptGui"):WaitForChild("promptOverlay")
 NetworkClient:SetOutgoingKBPSLimit(math.huge)
 
