@@ -32,7 +32,7 @@ local Operations = {
 	["ReplaceUserId"] = function(Fields)
 		OldUserId = Fields["OldUserId"]
 		NewUserId = Fields["NewUserId"]
-		warn(string.format("Bot {%s} object persisted to {%s}", OldUserId, NewUserId))
+		warn(string.format("Bot {%s} object persisted to {%s}", OldUserId, NewUserId)
 
 		AllBotObjects[OldUserId] = NewUserId
 	end,
