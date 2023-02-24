@@ -112,6 +112,7 @@ end)
 
 local function AskServerTwoWay(Message, Args)
 	local MessageId = HttpService:GenerateGUID(false)
+    Args = Args or {}
 	Args["ClientID"] = MessageId
 
 	SendToMaster({
