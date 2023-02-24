@@ -24,10 +24,27 @@ end
 
 local OutgoingMessages = {
 
-    }
+}
+
+local AllBotObjects = {}
+
+local Operations = {
+	["ReplaceUserId"] = function(Fields)
+		OldUserId = Fields["OldUserId"]
+		NewUserId = Fields["NewUserId"]
+		warn(string.format("Bot {%s} object persisted to {%s}", OldUserId, NewUserId)
+
+		AllBotObjects[OldUserId] = NewUserId
+	end,
+}
 
 local GlobalWSConnection = WebSocket.OnMessage:Connect(function(Data)
     local Response = HttpService:JSONDecode(Data)
+	local Operation = Operations[Response["Opcode"]]
+	if Operation then
+		Operation(Response["Fields"])
+		return
+	end
     OutgoingMessages[Response["ID"]] = Response["Body"]
 end)
 
@@ -57,6 +74,7 @@ SendToMaster({
     }
 })
 
+
 function Bot:Launch(PlaceId, JobId)
     assert(PlaceId, "Missing PlaceId!")
     assert(JobId, "Missing JobId!")
@@ -65,10 +83,13 @@ function Bot:Launch(PlaceId, JobId)
     setmetatable( a, self)
     self.__index = self
 
+
     a.UserId = AskServerTwoWay("NewBot", {
         ["PlaceId"] = PlaceId,
         ["JobId"] = JobId,
     })
+
+	AllBotObjects[a.UserId] = a
 
     return  a
 end
