@@ -6,6 +6,7 @@ local PhysicsService = game:GetService("PhysicsService")
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local CoreGui = game:GetService("CoreGui")
+local NetworkClient = game:GetService("NetworkClient")
 local PromptOverlay = CoreGui:WaitForChild("RobloxPromptGui"):WaitForChild("promptOverlay")
 NetworkClient:SetOutgoingKBPSLimit(math.huge)
 
@@ -24,14 +25,14 @@ local function SendToMaster(Payload)
 end
 
 local function Ping()
-    while true do task.wait(1)
-        SendToMaster({
-            ["Operation"] = "Ping",
-            ["Arguments"] = {
-                ["UserId"] = LocalPlayer.UserId,
-            }
-        })
-    end
+	while true do task.wait(1)
+		SendToMaster({
+			["Operation"] = "Ping",
+			["Arguments"] = {
+				["UserId"] = LocalPlayer.UserId, 
+			}
+		})
+	end
 end
 
 local function BannedFromGame()
@@ -75,7 +76,7 @@ local function DisableAllRendering()
 
     settings().Rendering.QualityLevel = 1
 
-    for _, Object in ipairs(workspace:GetDescendants()) do --
+    for _, Object in ipairs(workspace:GetDescendants()) do -- 
         Disable(Object)
     end
 
@@ -85,67 +86,67 @@ local function DisableAllRendering()
 end
 
 local Operations = {
-    ["ChatMsg"] = function(Message)
-        game.ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer(Message, "All")
-    end,
-    ["Execute"] = function(Code)
-        warn(pcall(loadstring(Code)))
-    end
+	["ChatMsg"] = function(Message)
+		game.ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer(Message, "All")
+	end,
+	["Execute"] = function(Code)
+		warn(pcall(loadstring(Code)))
+	end
 }
 
 local OutgoingMessages = {
 
-    }
+}
 
 
 
 local GlobalWSConnection = WebSocket.OnMessage:Connect(function(Data)
-    local Response = HttpService:JSONDecode(Data)
-    local Operation = Operations[Response[1]]
-    if Operation then
-        Operation(Response[2])
-        return
-    end
-    OutgoingMessages[Response["ID"]] = Response["Body"]
+	local Response = HttpService:JSONDecode(Data)
+	local Operation = Operations[Response[1]]
+	if Operation then
+		Operation(Response[2])
+		return
+	end
+	OutgoingMessages[Response["ID"]] = Response["Body"] 
 end)
 
 local function AskServerTwoWay(Message, Args)
-    local MessageId = HttpService:GenerateGUID(false)
-    Args["ClientID"] = MessageId
+	local MessageId = HttpService:GenerateGUID(false)
+	Args["ClientID"] = MessageId
 
-    SendToMaster({
+	SendToMaster({
         ["Operation"] = Message,
         ["Arguments"] = Args
     })
-    repeat
-        task.wait()
-    until OutgoingMessages[MessageId]
-    local Message = OutgoingMessages[MessageId]
-    OutgoingMessages[MessageId] = nil
-    return Message
+	repeat 
+		task.wait()
+	until OutgoingMessages[MessageId]
+	local Message = OutgoingMessages[MessageId]
+	OutgoingMessages[MessageId] = nil
+	return Message
 end
 
-if AskServerTwoWay("GetMainAccount") == LocalPlayer.Name then
-    print("Main account")
-    return
+if AskServerTwoWay("GetMainAccount") == LocalPlayer.Name then 
+	print("Main account")
+	return
 end
 
 local Bot = {}
 
 function Bot.GetMemory(Key)
-    return AskServerTwoWay("GetMemory", {
-        ["Who"] = LocalPlayer.UserId
-    })[Key]
+	return AskServerTwoWay("GetMemory", {
+		["Who"] = LocalPlayer.UserId
+	})[Key]
 end
 
 function Bot.LoadToMemory(Key, Value)
-    SendToMaster({
+	SendToMaster({
         ["Operation"] = "AddToMemory",
         ["Arguments"] = {
-            ["Key"] = Key,
-            ["Value"] = Value,
-            ["Who"] = LocalPlayer.UserId,
-        }
+			["Key"] = Key,
+			["Value"] = Value,
+			["Who"] = LocalPlayer.UserId,
+		}
     })
 end
 
@@ -155,7 +156,7 @@ DisableAllRendering()
 GuiService.ErrorMessageChanged:Connect(BannedFromGame)
 TeleportService.LocalPlayerArrivedFromTeleport:Connect(BannedFromGame)
 
-for _, Child in ipairs(PromptOverlay:GetChildren()) do
+for _, Child in ipairs(PromptOverlay:GetChildren()) do 
     if Child.Name == 'ErrorPrompt' and Child:FindFirstChild('MessageArea') and Child.MessageArea:FindFirstChild("ErrorFrame") then
         BannedFromGame()
         return
