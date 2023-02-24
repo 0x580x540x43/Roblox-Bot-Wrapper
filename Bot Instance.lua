@@ -135,7 +135,7 @@ if AskServerTwoWay("GetMainAccount") == LocalPlayer.Name then
 	return
 end
 
-local Bot = {}
+getgenv().Bot = {}
 
 function Bot.GetMemory(Key)
 	return AskServerTwoWay("GetMemory", {
