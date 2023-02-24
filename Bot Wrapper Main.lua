@@ -58,6 +58,8 @@ SendToMaster({
 })
 
 function Bot:Launch(PlaceId, JobId)
+    assert(PlaceId, "Missing PlaceId!")
+    assert(JobId, "Missing JobId!")
     local a = {}
 
     setmetatable( a, self)
@@ -87,18 +89,22 @@ end
 function Bot:Chat(Message)
     SendToMaster({
         ["Operation"] = "Chat",
-        ["Arguments"] = {["Message"] = Message},
+        ["Arguments"] = {["Message"] = Message or ""},
         ["Who"] = self.UserId,
     })
 end
 
 function Bot:GetMemory(Key)
+    assert(Key, "Missing key!")
     return AskServerTwoWay("GetMemory", {
         ["Who"] = self.UserId
     })[Key]
 end
 
 function Bot:LoadToMemory(Key, Value)
+    assert(Key, "Missing key!")
+    assert(Value, "Missing value!")
+
     SendToMaster({
         ["Operation"] = "AddToMemory",
         ["Arguments"] = {
@@ -110,6 +116,7 @@ function Bot:LoadToMemory(Key, Value)
 end
 
 function Bot:Execute(Code)
+    assert(Code, "Missing Code!")
     SendToMaster({
         ["Operation"] = "Execute",
         ["Arguments"] = {
