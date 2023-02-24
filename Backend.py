@@ -182,8 +182,7 @@ def LoadBot(PlaceId, JobId, Memory = {}):
 
     if Configuration["PlaceID"] in BotBanList[UserIdString]:
         print("Bot was previously banned from this game. Using another.")
-        LoadBot()
-        return
+        return LoadBot(PlaceId, JobId)
 
     UserIDsToCookies[UserID] = Cookie
 
@@ -204,6 +203,7 @@ def RemoveBotData(UserID):
     del UserIDsToCookies[UserID]
     del Timeouts[UserID]
 
+
 def DestroyAndReplaceBot(UserID):
     print(f"Instance with bot UserId of {UserID} was banned from a game. Replacing with a new account")
     BotBanList[str(UserID)].append(Configuration["MasterPlaceId"])
@@ -211,20 +211,41 @@ def DestroyAndReplaceBot(UserID):
     OldBotData = Timeouts[UserID]
     RemoveBotData(UserID)
 
-    LoadBot(OldBotData["PlaceId"], OldBotData["JobId"], OldBotData["Storage"])
+    NewId = LoadBot(OldBotData["PlaceId"], OldBotData["JobId"], OldBotData["Storage"])
+
+    asyncio.run(Configuration["MainAccountWebsocket"].send(json.dumps({
+        "Opcode" : "ReplaceUserId",
+        "Fields" : {
+            "OldUserId" : UserID,
+            "NewUserId" : NewId,
+        }
+    })))
+
+
+async def WaitForInjection(websocket, ClientID, BotId):
+    print(websocket, ClientID, BotId)
+    global Timeouts
+    while not Timeouts[BotId]["Injected"]:
+        continue
+    await websocket.send(json.dumps({
+        "ID" : ClientID,
+        "Body" : BotId
+    }))  
+
+def WrapWaitForInjection(websocket, ClientID, BotId):
+    asyncio.run(WaitForInjection(websocket, ClientID, BotId))
 
 async def NewBot(Arguments, websocket):
     global Configuration
     PlaceId = Arguments["PlaceId"]
     JobId = Arguments["JobId"]
     BotId = LoadBot(PlaceId, JobId)
-    while not Timeouts[BotId]["Injected"]:
-        continue
-    await websocket.send(json.dumps({
-        "ID" : Arguments["ClientID"],
-        "Body" : BotId
 
-    }))
+    _thread = threading.Thread(target=WrapWaitForInjection, args=(websocket, Arguments["ClientID"], BotId))
+    _thread.daemon = True
+    _thread.start()
+
+
 
 
 async def Ping(Arguments, websocket):
@@ -258,7 +279,8 @@ def ReduceLife():
                     print("Bot failed", BotStatus["FailedAttempts"], "times")
                     DestroyAndReplaceBot(UserIDOfBot)
                     continue
-                JoinNewServer(UserIDOfBot)
+                BotData = Timeouts[UserIDOfBot]
+                JoinNewServer(UserIDOfBot, BotData["PlaceId"], BotData["JobId"])
                 BotStatus["LastPingTimestamp"] = int(time.time())
                 BotStatus["FailedAttempts"] += 1
             time.sleep(1)
@@ -340,6 +362,7 @@ async def GetMainAccount(Arguments, websocket):
 
 async def SetMainAccount(Arguments, websocket):
     global Configuration
+    Configuration["MainAccountWebsocket"] = websocket
     Configuration["MainAccountName"] = Arguments["Username"]
 
 Operations = {
