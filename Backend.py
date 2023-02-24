@@ -65,7 +65,7 @@ Timeouts = {
 
 def RemoveDictValue(dict, Value):
     for Key in dict.keys():
-        if dict[Key] == Value:
+        if dict.get(Key) == Value:
             del dict[Value]
 
 
@@ -225,8 +225,12 @@ def DestroyAndReplaceBot(UserID):
 async def WaitForInjection(websocket, ClientID, BotId):
     print(websocket, ClientID, BotId)
     global Timeouts
-    while not Timeouts[BotId]["Injected"]:
-        continue
+    while True:
+        if BotId == None:
+            return
+        if Timeouts[BotId]["Injected"]:
+            break
+        
     await websocket.send(json.dumps({
         "ID" : ClientID,
         "Body" : BotId
