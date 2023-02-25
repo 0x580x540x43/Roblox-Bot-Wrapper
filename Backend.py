@@ -44,7 +44,6 @@ BotBanList = PersistentDict("BotBanList").retrieve()
 Configuration = {
     "PlaceID" : None,
     "TimeoutLength" : 35,
-    "AmountOfBotsToRun" : 6,
     "MasterPlaceId" : None,
     "MasterJobId" : None,
     "MainAccountName" : None
