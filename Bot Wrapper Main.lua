@@ -136,6 +136,14 @@ function Bot:LoadToMemory(Key, Value)
     })
 end
 
+function Bot:GetPlayerInstance()
+  for _, Player in pairs(Players:GetPlayers()) do
+    if Player.UserId == self.UserId then 
+      return Player
+    end
+  end
+end
+
 function Bot:Execute(Code)
     assert(Code, "Missing Code!")
     SendToMaster({
