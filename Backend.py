@@ -313,7 +313,7 @@ async def broadcast(message):
         await send(websocket, message)
 
 async def SendToUserId(UserId, message):
-    await WebsocketConnections[UserId].send(message)
+    await send(WebsocketConnections[UserId], message)
 
 async def Execute(Arguments, websocket):
     CodeData = Arguments["Code"]
@@ -325,7 +325,7 @@ async def Execute(Arguments, websocket):
         await SendToUserId(Targets, CodeMsg)
 
 async def GetBots(Arguments, websocket):
-    await websocket.send(json.dumps({
+    await send(websocket, json.dumps({
         "Body" : Timeouts.keys(),
         "ID" : Arguments["ClientID"]
     }))
@@ -344,7 +344,7 @@ async def AddToMemory(Arguments, websocket):
     Timeouts[UserId]["Storage"][Key] = Value
 
 async def GetMemory(Arguments, websocket):
-    await websocket.send(json.dumps({
+    await send(websocket, json.dumps({
         "Body" : Timeouts[Arguments["Who"]]["Storage"],
         "ID" : Arguments["ClientID"]
     }))
@@ -358,7 +358,7 @@ async def Disconnect(Arguments, websocket):
 async def GetMainAccount(Arguments, websocket):
     global Configuration
 
-    await websocket.send(json.dumps({
+    await send(websocket, json.dumps({
         "ID" : Arguments["ClientID"],
         "Body" : Configuration["MainAccountName"]
     }))
